@@ -7,107 +7,156 @@
 
 import UIKit
 import MapboxMaps
+import MapboxNavigation
+import MapboxCoreNavigation
 import MapboxDirections
+import CoreLocation
 
-class ViewController: UIViewController {
+
+class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMapViewDelegate, NavigationViewControllerDelegate {
+    
     
     var mapView: MapView!
-    var startAddressTextField: UITextField!
-    var destinationAddressTextField: UITextField!
-    var routeButton: UIButton!
+    var navigationMapView: NavigationMapView!
+    
+    
+    private let layout = HomeViewLayout()
+    
+    var locationManager: CLLocationManager!
+    var userLocation: CLLocation?
+    var layoutBottomConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupMapView()
-        setupUI()
+        view.backgroundColor = .white
+        setupNavigationMapView()
+        
+        layout.continueButton.addTarget(self, action: #selector(getRoute), for: .touchUpInside)
+        
+        setupLocationManager()
+        
+        setupKeyboardObservers()
     }
     
-    func setupMapView() {
-           let mapInitOptions = MapInitOptions(styleURI: .streets)
-           mapView = MapView(frame: view.bounds, mapInitOptions: mapInitOptions)
-           mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-           view.addSubview(mapView)
+    func setupLocationManager() {
+           locationManager = CLLocationManager()
+           locationManager.delegate = self
+           checkLocationAuthorization()
+       }
+       
+       func checkLocationAuthorization() {
+           let authorizationStatus = locationManager.authorizationStatus
+           switch authorizationStatus {
+           case .notDetermined:
+               locationManager.requestWhenInUseAuthorization()
+           case .restricted, .denied:
+               print("Location access denied or restricted.")
+           case .authorizedAlways, .authorizedWhenInUse:
+               locationManager.startUpdatingLocation()
+           @unknown default:
+               break
+           }
        }
     
-    func setupUI() {
-            // Start Address Text Field
-            startAddressTextField = UITextField(frame: CGRect(x: 20, y: 50, width: view.frame.width - 40, height: 40))
-            startAddressTextField.borderStyle = .roundedRect
-            startAddressTextField.placeholder = "Enter start address"
-            view.addSubview(startAddressTextField)
-            
-            // Destination Address Text Field
-            destinationAddressTextField = UITextField(frame: CGRect(x: 20, y: 100, width: view.frame.width - 40, height: 40))
-            destinationAddressTextField.borderStyle = .roundedRect
-            destinationAddressTextField.placeholder = "Enter destination address"
-            view.addSubview(destinationAddressTextField)
-            
-            // Route Button
-            routeButton = UIButton(type: .system)
-            routeButton.frame = CGRect(x: 20, y: 150, width: view.frame.width - 40, height: 50)
-            routeButton.setTitle("Get Route", for: .normal)
-            routeButton.addTarget(self, action: #selector(getRoute), for: .touchUpInside)
-            view.addSubview(routeButton)
+    func setupNavigationMapView() {
+        navigationMapView = NavigationMapView(frame: view.bounds)
+        navigationMapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(navigationMapView)
+        view.addSubview(layout)
+        layout.backgroundColor = .clear
+        layout.translatesAutoresizingMaskIntoConstraints = false
+        layout.anchor(top: navigationMapView.bottomAnchor, leading: navigationMapView.leadingAnchor, bottom: nil, trailing: navigationMapView.trailingAnchor, padding: .init(top: 100, left: 0, bottom: 0, right: 0))
+        
+        
+        layoutBottomConstraint = layout.bottomAnchor.constraint(equalTo: navigationMapView.bottomAnchor, constant: 0)
+        layoutBottomConstraint?.isActive = true
+        
+        layout.constrainHeight(constant: 300)
+        
+    }
+    
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc private func handleKeyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+            return
+        }
+        
+
+        layoutBottomConstraint?.constant = -keyboardFrame.height
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc private func handleKeyboardWillHide(notification: NSNotification) {
+        layoutBottomConstraint?.constant = 0
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+            guard let location = locations.first else { return }
+            self.userLocation = location
+            locationManager.stopUpdatingLocation()
+            let geocoder = CLGeocoder()
+            geocoder.reverseGeocodeLocation(location) { [weak self] (placemarks, error) in
+                print("the first placemark is \(placemarks)")
+                if let placemark = placemarks?.first {
+                    if let address = placemark.name {
+                        self?.layout.originTextField.text = address
+                    }
+                }
+            }
         }
     
     @objc func getRoute() {
         
-        let startCoordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-        let destinationCoordinate = CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094) 
+        guard let currentLocation = userLocation else {
+            print("User location not available.")
+            return
+        }
+        guard let destination = layout.destinationTextField.text, !destination.isEmpty else {
+            print("Destination not provided.")
+            return
+        }
+        let routeCalculator = RouteViewModel()
         
-        let routeCalculator = RouteCalculator()
-        
-        routeCalculator.calculateRoute(from: startCoordinate, to: destinationCoordinate) { [weak self] route in
+        routeCalculator.calculateRoute(from: currentLocation.coordinate, to: destination) { [weak self] route in
             guard let self = self, let route = route else { return }
-            
-            // Render route on the map
-            self.drawRoute(route)
+            self.navigationMapView.showcase(route.routes ?? [])
+            let navigationcontroller = NavigationViewController(for: route, routeIndex: 0, routeOptions: routeCalculator.passedOptions!)
+            navigationcontroller.delegate = self
+            self.present(navigationcontroller, animated: true)
         }
     }
-
-
     
-    func drawRoute(_ route: Route) {
-        guard let routeShape = route.shape else { return }
-        var routeCoordinates: [CLLocationCoordinate2D] = []
-        
-        for coord in routeShape.coordinates {
-            routeCoordinates.append(CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude))
+    func navigationViewControllerDidDismiss(_ navigationViewController: NavigationViewController, byCanceling canceled: Bool) {
+            self.layout.isHidden = false
         }
-
-        let polylineAnnotation = PolylineAnnotation(lineCoordinates: routeCoordinates)
-
-        let polylineManager = mapView.annotations.makePolylineAnnotationManager()
-
-        polylineManager.annotations = [polylineAnnotation]
-
-        if let firstCoord = routeCoordinates.first {
-            let cameraOptions = CameraOptions(center: firstCoord, zoom: 14.0)
-            mapView.mapboxMap.setCamera(to: cameraOptions)
-        }
-    }
 
 
 }
 
-
-class RouteCalculator {
-    let directions = Directions.shared
-    
-    func calculateRoute(from start: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, completion: @escaping (Route?) -> Void) {
-        let startWaypoint = Waypoint(coordinate: start, name: "Start")
-        let destinationWaypoint = Waypoint(coordinate: destination, name: "Destination")
-        
-        let options = RouteOptions(waypoints: [startWaypoint, destinationWaypoint], profileIdentifier: .walking)
-        
-        directions.calculate(options) { [weak self] (result) in
-            switch result {
-            case .failure(let error):
-                print("Error calculating route: \(error.localizedDescription)")
-                completion(nil)
-            case .success(let response):
-                completion(response.routes?.first)
-            }
-        }
-    }
+extension CLLocationManager {
+func locationServicesEnabledThreadSafe(completion: @escaping (Bool) -> Void) {
+    DispatchQueue.global().async {
+         let result = CLLocationManager.locationServicesEnabled()
+         DispatchQueue.main.async {
+            completion(result)
+         }
+      }
+   }
 }
+
