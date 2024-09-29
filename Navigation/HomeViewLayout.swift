@@ -32,7 +32,8 @@ final class HomeViewLayout: BaseView {
 
     @objc private func handleContinueButtonTapped() {
             self.endEditing(true)
-        }
+       
+    }
 }
 
 #if DEBUG && canImport(SwiftUI)
