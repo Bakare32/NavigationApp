@@ -112,7 +112,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMap
             locationManager.stopUpdatingLocation()
             let geocoder = CLGeocoder()
             geocoder.reverseGeocodeLocation(location) { [weak self] (placemarks, error) in
-                print("the first placemark is \(placemarks)")
                 if let placemark = placemarks?.first {
                     if let address = placemark.name {
                         self?.layout.originTextField.text = address
@@ -149,14 +148,4 @@ class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMap
 
 }
 
-extension CLLocationManager {
-func locationServicesEnabledThreadSafe(completion: @escaping (Bool) -> Void) {
-    DispatchQueue.global().async {
-         let result = CLLocationManager.locationServicesEnabled()
-         DispatchQueue.main.async {
-            completion(result)
-         }
-      }
-   }
-}
 
