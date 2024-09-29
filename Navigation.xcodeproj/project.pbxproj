@@ -172,6 +172,15 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		ED4CEBE82CA9A553008B4125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				ED4760E72CA95B3A00E22E78 /* HomeViewLayout.swift */,
+				EDE3A8B82CA31F1D000DF434 /* ViewController.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		EDE3A8A82CA31F1D000DF434 = {
 			isa = PBXGroup;
 			children = (
@@ -197,13 +206,12 @@
 		EDE3A8B32CA31F1D000DF434 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
+				ED4CEBE82CA9A553008B4125 /* View */,
 				ED4CEBE32CA98002008B4125 /* ViewModel */,
 				ED4760D62CA9533500E22E78 /* Utility */,
 				EDE3A8B42CA31F1D000DF434 /* AppDelegate.swift */,
 				ED4760D12CA9526500E22E78 /* Extension */,
 				EDE3A8B62CA31F1D000DF434 /* SceneDelegate.swift */,
-				ED4760E72CA95B3A00E22E78 /* HomeViewLayout.swift */,
-				EDE3A8B82CA31F1D000DF434 /* ViewController.swift */,
 				EDE3A8BA2CA31F1D000DF434 /* Main.storyboard */,
 				EDE3A8BD2CA31F1F000DF434 /* Assets.xcassets */,
 				ED4760D42CA952C600E22E78 /* Colour.xcassets */,
