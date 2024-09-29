@@ -65,20 +65,9 @@ class ViewController: UIViewController {
         }
     }
 
-//    func drawRoute(_ route: Route) {
-//        var routeCoordinates = route.shape!.coordinates
-//        let routeLine = PolylineAnnotation(coordinates: routeCoordinates)
-//        
-//        let lineManager = self.mapView.annotations.makePolylineAnnotationManager()
-//        lineManager.annotations = [routeLine]
-//        
-//        // Optionally zoom into the route
-//        let cameraOptions = CameraOptions(center: routeCoordinates.first, zoom: 14.0)
-//        mapView.mapboxMap.setCamera(to: cameraOptions)
-//    }
+
     
     func drawRoute(_ route: Route) {
-        // Convert the route’s geometry into an array of CLLocationCoordinate2D
         guard let routeShape = route.shape else { return }
         var routeCoordinates: [CLLocationCoordinate2D] = []
         
@@ -86,16 +75,12 @@ class ViewController: UIViewController {
             routeCoordinates.append(CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude))
         }
 
-        // Create a line with attributes like color and width
         let polylineAnnotation = PolylineAnnotation(lineCoordinates: routeCoordinates)
 
-        // Create the Polyline Annotation Manager
         let polylineManager = mapView.annotations.makePolylineAnnotationManager()
 
-        // Add the annotation to the manager
         polylineManager.annotations = [polylineAnnotation]
 
-        // Optionally, zoom into the route
         if let firstCoord = routeCoordinates.first {
             let cameraOptions = CameraOptions(center: firstCoord, zoom: 14.0)
             mapView.mapboxMap.setCamera(to: cameraOptions)
