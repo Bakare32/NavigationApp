@@ -6,14 +6,14 @@
 //
 
 import UIKit
-import MapboxMaps
-import MapboxNavigation
 import MapboxCoreNavigation
 import MapboxDirections
 import CoreLocation
+import UIKit
+import MapboxDirections
 
 
-class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMapViewDelegate, NavigationViewControllerDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate {
     
     
     var mapView: MapView!
@@ -58,10 +58,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMap
            }
        }
     
+
+    
     func setupNavigationMapView() {
-        navigationMapView = NavigationMapView(frame: view.bounds)
-        navigationMapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(navigationMapView)
+        let mapInitOptions = MapInitOptions(styleURI: .streets)
+        mapView = MapView(frame: view.bounds, mapInitOptions: mapInitOptions)
+        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(mapView)
         view.addSubview(layout)
         layout.backgroundColor = .clear
         layout.translatesAutoresizingMaskIntoConstraints = false
@@ -120,32 +123,36 @@ class ViewController: UIViewController, CLLocationManagerDelegate, NavigationMap
             }
         }
     
+    
+    
     @objc func getRoute() {
+       
+        let startCoordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+        let destinationCoordinate = CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094)
         
-        guard let currentLocation = userLocation else {
-            print("User location not available.")
-            return
-        }
-        guard let destination = layout.destinationTextField.text, !destination.isEmpty else {
-            print("Destination not provided.")
-            return
-        }
         let routeCalculator = RouteViewModel()
         
-        routeCalculator.calculateRoute(from: currentLocation.coordinate, to: destination) { [weak self] route in
+        routeCalculator.calculateRoute(from: startCoordinate, to: destinationCoordinate) { [weak self] route in
             guard let self = self, let route = route else { return }
-            self.navigationMapView.showcase(route.routes ?? [])
-            let navigationcontroller = NavigationViewController(for: route, routeIndex: 0, routeOptions: routeCalculator.passedOptions!)
-            navigationcontroller.delegate = self
-            self.present(navigationcontroller, animated: true)
+            
+            // Render route on the map
+            self.drawRoute(route)
         }
     }
+
+    func drawRoute(_ route: Route) {
+        var routeCoordinates = route.shape!.coordinates
+        let routeLine = Polyline(coordinates: routeCoordinates)
+        
+        let lineManager = self.mapView.annotations.makePolylineAnnotationManager()
+        lineManager.annotations = [routeLine]
+        
+        // Optionally zoom into the route
+        let cameraOptions = CameraOptions(center: routeCoordinates.first, zoom: 14.0)
+        mapView.mapboxMap.setCamera(to: cameraOptions)
+    }
+
     
-    func navigationViewControllerDidDismiss(_ navigationViewController: NavigationViewController, byCanceling canceled: Bool) {
-            self.layout.isHidden = false
-        }
-
-
 }
 
 

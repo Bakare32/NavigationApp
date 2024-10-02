@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		236BD768FB29BC1D6C1A4EF6 /* Pods_Navigation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 531A170B4DBC93FFDD599A28 /* Pods_Navigation.framework */; };
 		535A06A11F12CD55F5A9276F /* Pods_NavigationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD46570368A0B78C6DF65ED8 /* Pods_NavigationTests.framework */; };
 		DEA5C1A8EE825E732BAC5DA9 /* Pods_Navigation_NavigationUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0A1C277B1A9C43B36738BEB /* Pods_Navigation_NavigationUITests.framework */; };
 		ED4760D32CA9527E00E22E78 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4760D22CA9527E00E22E78 /* UIColor+Extension.swift */; };
@@ -23,6 +22,7 @@
 		ED4760E82CA95B3A00E22E78 /* HomeViewLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4760E72CA95B3A00E22E78 /* HomeViewLayout.swift */; };
 		ED4760EA2CA95BB600E22E78 /* SMButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4760E92CA95BB600E22E78 /* SMButton.swift */; };
 		ED4CEBE52CA98016008B4125 /* RouteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CEBE42CA98016008B4125 /* RouteViewModel.swift */; };
+		ED961FA32CAE126A006C9BC0 /* MapboxCoreNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = ED961FA22CAE126A006C9BC0 /* MapboxCoreNavigation */; };
 		EDE3A8B52CA31F1D000DF434 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE3A8B42CA31F1D000DF434 /* AppDelegate.swift */; };
 		EDE3A8B72CA31F1D000DF434 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE3A8B62CA31F1D000DF434 /* SceneDelegate.swift */; };
 		EDE3A8B92CA31F1D000DF434 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE3A8B82CA31F1D000DF434 /* ViewController.swift */; };
@@ -94,7 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				236BD768FB29BC1D6C1A4EF6 /* Pods_Navigation.framework in Frameworks */,
+				ED961FA32CAE126A006C9BC0 /* MapboxCoreNavigation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +257,7 @@
 			);
 			name = Navigation;
 			packageProductDependencies = (
+				ED961FA22CAE126A006C9BC0 /* MapboxCoreNavigation */,
 			);
 			productName = Navigation;
 			productReference = EDE3A8B12CA31F1D000DF434 /* Navigation.app */;
@@ -334,6 +335,7 @@
 			);
 			mainGroup = EDE3A8A82CA31F1D000DF434;
 			packageReferences = (
+				ED961FA12CAE126A006C9BC0 /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */,
 			);
 			productRefGroup = EDE3A8B22CA31F1D000DF434 /* Products */;
 			projectDirPath = "";
@@ -853,6 +855,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		ED961FA12CAE126A006C9BC0 /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mapbox/mapbox-navigation-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		ED961FA22CAE126A006C9BC0 /* MapboxCoreNavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ED961FA12CAE126A006C9BC0 /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */;
+			productName = MapboxCoreNavigation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = EDE3A8A92CA31F1D000DF434 /* Project object */;
 }
